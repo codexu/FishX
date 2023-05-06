@@ -58,6 +58,15 @@ async function getListData () {
   });
 }
 
+export async function fetchListData() {
+  if (browser === undefined) {
+    await initBorwser();
+    return await getListData();
+  } else {
+    return await getListData();
+  }
+}
+
 export async function fetchContent(url: string) {
   await contentPage.goto(url);
   await contentPage.waitForSelector(".article-content", {
@@ -65,19 +74,8 @@ export async function fetchContent(url: string) {
     timeout: 3000,
   });
   return await contentPage.evaluate(async () => {
-    const htmlString = document.querySelector(".article-content");
-    // 将html 转换为字符串，去掉标签
-    const html = htmlString?.innerHTML.replace(/<[^>]+>/g, "") || "加载失败";
-    return html;
+    const dom = document.querySelector(".article-content");
+    let string = '###### ' + dom?.innerHTML.replace(/<[^>]+>/g, "");
+    return string || "暂无内容";
   });
-}
-
-
-export async function fetchListData () {
-  if (browser === undefined) {
-    await initBorwser();
-    return await getListData();
-  } else {
-    return await getListData();
-  }
 }

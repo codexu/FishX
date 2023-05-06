@@ -83,7 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (word === "const") {
           const { index, data } = getLoaclData(context);
           const content = await fetchContent(data[index].src);
-          return new vscode.Hover(content);
+          return new vscode.Hover(content, range);
         }
       },
     }
