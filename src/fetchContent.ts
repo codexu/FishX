@@ -4,8 +4,10 @@ const puppeteer = require("puppeteer");
 
 const baseUrl = "https://toutiao.com/";
 
+let browser, page;
+
 export default async function () {
-  const browser = await puppeteer.launch({
+  browser = await puppeteer.launch({
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -13,7 +15,7 @@ export default async function () {
     ],
     dumpio: false,
   });
-  const page = await browser.newPage();
+  page = await browser.newPage();
 
   await page.evaluate(
     "() =>{Object.defineProperties(navigator,{webdriver:{get: () => false}})}"
@@ -30,9 +32,12 @@ export default async function () {
     let list: DataItem[] = [];
     document.querySelectorAll(".feed-card-wrapper").forEach((item) => {
       const itemText = item.querySelector(".title");
-      if (itemText) {
+      if (itemText && itemText.innerHTML.length > 0) {
         list.push({
-          title: itemText.innerHTML,
+          title:
+            itemText.innerHTML.length > 20
+              ? itemText.innerHTML.slice(0, 20) + "..."
+              : itemText.innerHTML,
           src: itemText.getAttribute("href") || "",
         });
       }

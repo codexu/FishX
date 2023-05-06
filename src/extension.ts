@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import fetchContent from './fetchContent';
 import { DataItem } from "./index.d";
+import { setStateBarItem } from './setStatusBar';
 
 let statusBarContent:vscode.StatusBarItem;
 
@@ -15,6 +16,15 @@ export async function activate(context: vscode.ExtensionContext) {
       statusBarContent.text = "加载中...";
       statusBarContent.show();
 
+      const prevButton = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Right,
+        100
+      );
+      prevButton.text = "$(arrow-left)";
+      prevButton.tooltip = "上一条";
+      prevButton.command = "FishX.prev";
+      prevButton.show();
+
       const nextButton = vscode.window.createStatusBarItem(
         vscode.StatusBarAlignment.Right,
         100
@@ -23,12 +33,12 @@ export async function activate(context: vscode.ExtensionContext) {
       nextButton.tooltip = "下一条";
       nextButton.command = "FishX.next";
       nextButton.show();
-      
+
       const data = await fetchContent();
       context.workspaceState.update("tt-data", data);
       context.workspaceState.update("tt-index", 0);
 
-      statusBarContent.text = data[0].title;
+      setStateBarItem(statusBarContent, context);
     }
   });
 
@@ -41,7 +51,19 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     context.workspaceState.update("tt-index", index + 1);
     if (statusBarContent !== undefined) {
-      statusBarContent.text = data[index].title;
+      setStateBarItem(statusBarContent, context);
+    }
+  });
+
+  vscode.commands.registerCommand("FishX.prev", async () => {
+    const index = context.workspaceState.get("tt-index") as number || 0;
+    if (index <= 0) {
+      vscode.window.showInformationMessage("已经是第一条了");
+      return;
+    }
+    context.workspaceState.update("tt-index", index - 1);
+    if (statusBarContent !== undefined) {
+      setStateBarItem(statusBarContent, context);
     }
   });
 	
