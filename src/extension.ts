@@ -1,26 +1,51 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import fetchContent from './fetchContent';
+import { DataItem } from "./index.d";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+let statusBarContent:vscode.StatusBarItem;
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "tt-fish" is now active!');
+export async function activate(context: vscode.ExtensionContext) {
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('tt-fish.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from tt-fish!');
-	});
+	let disposable = vscode.commands.registerCommand("FishX.init", async () => {
+    if (statusBarContent === undefined) {
+      statusBarContent = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Right,
+        100
+      );
+      statusBarContent.text = "加载中...";
+      statusBarContent.show();
 
+      const nextButton = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Right,
+        100
+      );
+      nextButton.text = "$(arrow-right)";
+      nextButton.tooltip = "下一条";
+      nextButton.command = "FishX.next";
+      nextButton.show();
+      
+      const data = await fetchContent();
+      context.workspaceState.update("tt-data", data);
+      context.workspaceState.update("tt-index", 0);
+
+      statusBarContent.text = data[0].title;
+    }
+  });
+
+  vscode.commands.registerCommand("FishX.next", async () => {
+    const index = context.workspaceState.get("tt-index") as number || 0;
+    const data = (context.workspaceState.get("tt-data") as DataItem[]) || [];
+    if (index >= data.length - 1) {
+      vscode.window.showInformationMessage("已经是最后一条了");
+      return;
+    }
+    context.workspaceState.update("tt-index", index + 1);
+    if (statusBarContent !== undefined) {
+      statusBarContent.text = data[index].title;
+    }
+  });
+	
 	context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
