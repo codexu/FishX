@@ -1,11 +1,11 @@
+import autoScroll from "./autoScroll";
 import { DataItem } from "./index.d";
-
-const puppeteer = require("puppeteer");
+import puppeteer, { Browser, Page } from "puppeteer";
 
 const baseUrl = "https://toutiao.com/";
 
-let browser:any = undefined;
-let page:any;
+let browser: Browser;
+let page: Page;
 
 async function initBorwser() {
   browser = await puppeteer.launch({
@@ -24,16 +24,15 @@ async function initBorwser() {
   );
 
   await page.goto(baseUrl);
-}
-
-async function fetchData () {
   await page.waitForSelector(".feed-card-wrapper", {
     visible: true,
     timeout: 3000,
   });
+}
 
+async function fetchData () {
+  await autoScroll(page);
   return await page.evaluate(async () => {
-    window.scrollBy(0, document.body.scrollHeight);
     let list: DataItem[] = [];
     document.querySelectorAll(".feed-card-wrapper").forEach((item) => {
       if (item.classList.contains("sticky-cell")) {
