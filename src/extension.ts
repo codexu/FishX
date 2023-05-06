@@ -46,7 +46,15 @@ export async function activate(context: vscode.ExtensionContext) {
     const index = context.workspaceState.get("tt-index") as number || 0;
     const data = (context.workspaceState.get("tt-data") as DataItem[]) || [];
     if (index >= data.length - 1) {
-      vscode.window.showInformationMessage("已经是最后一条了");
+      statusBarContent.text = "正在加载更多...";
+      const newData = await fetchContent();
+      const newDataMap = new Map();
+      for (const item of [...data, ...newData]) {
+        newDataMap.set(item.title, item);
+      }
+      context.workspaceState.update("tt-data", [...newDataMap.values()]);
+      context.workspaceState.update("tt-index", index + 1);
+      setStateBarItem(statusBarContent, context);
       return;
     }
     context.workspaceState.update("tt-index", index + 1);

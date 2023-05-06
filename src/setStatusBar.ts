@@ -9,5 +9,6 @@ export function setStateBarItem(statusBarContent:vscode.StatusBarItem, context: 
     statusBarContent.text = `${data[index].title} ${index + 1}/${
       data.length
     }`;
+    statusBarContent.tooltip = data[index].desc;
   }
 }
