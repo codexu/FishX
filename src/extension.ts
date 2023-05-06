@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import fetchContent from './fetchContent';
-import { DataItem } from "./index.d";
+import { fetchListData, fetchContent } from "./fetchData";
 import { setStateBarItem } from './setStatusBar';
+import getLoaclData from './libs/getLocalData';
 
 let statusBarContent:vscode.StatusBarItem;
 
@@ -34,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext) {
       nextButton.command = "FishX.next";
       nextButton.show();
 
-      const data = await fetchContent();
+      const data = await fetchListData();
       context.workspaceState.update("tt-data", data);
       context.workspaceState.update("tt-index", 0);
 
@@ -43,11 +43,10 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   vscode.commands.registerCommand("FishX.next", async () => {
-    const index = context.workspaceState.get("tt-index") as number || 0;
-    const data = (context.workspaceState.get("tt-data") as DataItem[]) || [];
+    const { index, data } = getLoaclData(context);
     if (index >= data.length - 1) {
-      statusBarContent.text = "正在加载更多...";
-      const newData = await fetchContent();
+      statusBarContent.text = "正在加载更多内容...";
+      const newData = await fetchListData();
       const newDataMap = new Map();
       for (const item of [...data, ...newData]) {
         newDataMap.set(item.title, item);
@@ -64,7 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   vscode.commands.registerCommand("FishX.prev", async () => {
-    const index = context.workspaceState.get("tt-index") as number || 0;
+    const { index } = getLoaclData(context);
     if (index <= 0) {
       vscode.window.showInformationMessage("已经是第一条了");
       return;
@@ -74,8 +73,23 @@ export async function activate(context: vscode.ExtensionContext) {
       setStateBarItem(statusBarContent, context);
     }
   });
+
+  const hoverDisposable = vscode.languages.registerHoverProvider(
+    ["typescript", "javascript", "vue"],
+    {
+      async provideHover(document, position, token) {
+        const range = document.getWordRangeAtPosition(position);
+        const word = document.getText(range);
+        if (word === "const") {
+          const { index, data } = getLoaclData(context);
+          const content = await fetchContent(data[index].src);
+          return new vscode.Hover(content);
+        }
+      },
+    }
+  );
 	
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(disposable, hoverDisposable);
 }
 
 export function deactivate() {}

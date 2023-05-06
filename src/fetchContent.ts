@@ -1,13 +1,10 @@
-import autoScroll from "./autoScroll";
 import { DataItem } from "./index.d";
 import puppeteer, { Browser, Page } from "puppeteer";
-
-const baseUrl = "https://toutiao.com/";
 
 let browser: Browser;
 let page: Page;
 
-async function initBorwser() {
+async function initBorwser(url: string) {
   browser = await puppeteer.launch({
     headless: true,
     args: [
@@ -22,43 +19,27 @@ async function initBorwser() {
   await page.evaluate(
     "() =>{Object.defineProperties(navigator,{webdriver:{get: () => false}})}"
   );
+}
 
-  await page.goto(baseUrl);
-  await page.waitForSelector(".feed-card-wrapper", {
+export async function fetchData(url: string) {
+  await page.goto(url);
+  await page.waitForSelector(".article-content", {
     visible: true,
     timeout: 3000,
   });
-}
-
-async function fetchData () {
-  await autoScroll(page);
   return await page.evaluate(async () => {
-    let list: DataItem[] = [];
-    document.querySelectorAll(".feed-card-wrapper").forEach((item) => {
-      if (item.classList.contains("sticky-cell")) {
-        return;
-      }
-      const itemText = item.querySelector(".title");
-      if (itemText && itemText.innerHTML.length > 0) {
-        list.push({
-          title:
-            itemText.innerHTML.length > 20
-              ? itemText.innerHTML.slice(0, 20) + "..."
-              : itemText.innerHTML,
-          src: itemText.getAttribute("href") || "",
-          desc: itemText.innerHTML || "暂无描述",
-        });
-      }
-    });
-    return list;
+    const htmlString =  document.querySelector(".article-content");
+    // 将html 转换为字符串，去掉标签
+    const html = htmlString?.innerHTML.replace(/<[^>]+>/g, "") || '加载失败';
+    return html;
   });
 }
 
-export default async function () {
+export default async function (url: string) {
   if (browser === undefined) {
-    await initBorwser();
-    return await fetchData();
+    await initBorwser(url);
+    return await fetchData(url);
   } else {
-    return await fetchData();
+    return await fetchData(url);
   }
 }
