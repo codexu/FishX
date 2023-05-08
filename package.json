@@ -2,7 +2,8 @@
   "name": "fish-x",
   "displayName": "fish-x",
   "description": "toutiao",
-  "version": "0.0.1",
+  "publisher": "codexu",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -15,7 +16,21 @@
     "commands": [
       {
         "command": "FishX.init",
-        "title": "初始化 FishX"
+        "title": "开始摸鱼"
+      },
+      {
+        "command": "FishX.dispose",
+        "title": "结束摸鱼"
+      }
+    ],
+    "keybindings":[
+      {
+        "command": "FishX.next",
+        "key": "alt+d"
+      },
+      {
+        "command": "FishX.prev",
+        "key": "alt+a"
       }
     ]
   },

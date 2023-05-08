@@ -1,5 +1,5 @@
 import autoScroll from "./autoScroll";
-import { DataItem } from "./index.d";
+import { DataItem } from "../index.d";
 import puppeteer, { Browser, Page } from "puppeteer";
 
 const baseUrl = "https://toutiao.com/";

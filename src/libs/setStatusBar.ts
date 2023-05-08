@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { DataItem } from "./index.d";
+import { DataItem } from "../index.d";
 
 export function setStateBarItem(statusBarContent:vscode.StatusBarItem, context: vscode.ExtensionContext) {
   const index = (context.workspaceState.get("tt-index") as number) || 0;
