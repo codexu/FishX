@@ -1,9 +1,9 @@
 {
   "name": "fish-x",
   "displayName": "fish-x",
-  "description": "toutiao",
+  "description": "VSCode 头条摸鱼神器",
   "publisher": "codexu",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engines": {
     "vscode": "^1.78.0"
   },

@@ -28,7 +28,7 @@ async function initBorwser() {
     "() =>{Object.defineProperties(navigator,{webdriver:{get: () => false}})}"
   );
   await listPage.goto(baseUrl);
-  await listPage.waitForSelector(".feed-card-wrapper", {
+  await listPage.waitForSelector(".feed-card-article-wrapper", {
     visible: true,
     timeout: 3000,
   });
@@ -38,7 +38,7 @@ async function getListData () {
   await autoScroll(listPage);
   return await listPage.evaluate(async () => {
     let list: DataItem[] = [];
-    document.querySelectorAll(".feed-card-wrapper").forEach((item) => {
+    document.querySelectorAll(".feed-card-article-wrapper").forEach((item) => {
       if (item.classList.contains("sticky-cell")) {
         return;
       }
@@ -75,7 +75,34 @@ export async function fetchContent(url: string) {
   });
   return await contentPage.evaluate(async () => {
     const dom = document.querySelector(".article-content");
-    let string = '###### ' + dom?.innerHTML.replace(/<[^>]+>/g, "");
+    let string = '##### ' + dom?.innerHTML.replace(/<[^>]+>/g, "");
     return string || "暂无内容";
+  });
+}
+
+// 获取评论
+export async function fetchComment(url: string) {
+  await contentPage.goto(url);
+  await contentPage.waitForSelector(".side-drawer-btn", {
+    visible: true,
+    timeout: 3000,
+  });
+  // 点击评论按钮
+  await contentPage.click(".side-drawer-btn");
+  await contentPage.waitForSelector(".comment-list", {
+    visible: true,
+    timeout: 3000,
+  });
+  return await contentPage.evaluate(async () => {
+    const dom = document.querySelectorAll(".comment-list li");
+    let string = '';
+    dom.forEach((item) => {
+      const name = item.querySelector(".name");
+      const content = item.querySelector(".content");
+      if (name && content) {
+        string += `##### **${name.innerHTML}**：${content.innerHTML.replace(/<[^>]+>/g, "")}\n\n`;
+      }
+    });
+    return string || "暂无评论";
   });
 }

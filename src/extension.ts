@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { fetchListData, fetchContent } from "./libs/fetchData";
+import { fetchListData, fetchContent, fetchComment } from "./libs/fetchData";
 import { setStateBarItem } from './libs/setStatusBar';
 import getLoaclData from './libs/getLocalData';
 
@@ -116,6 +116,11 @@ export async function activate(context: vscode.ExtensionContext) {
         if (word === "const") {
           const { index, data } = getLoaclData(context);
           const content = await fetchContent(data[index].src);
+          return new vscode.Hover(content, range);
+        }
+        if (word === "export") {
+          const { index, data } = getLoaclData(context);
+          const content = await fetchComment(data[index].src);
           return new vscode.Hover(content, range);
         }
       },
