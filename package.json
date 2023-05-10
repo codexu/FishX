@@ -1,9 +1,9 @@
 {
   "name": "fish-x",
-  "displayName": "fish-x",
+  "displayName": "Fish X",
   "description": "头条摸鱼神器",
   "publisher": "codexu",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "icon": "logo.png",
   "engines": {
     "vscode": "^1.78.0"
