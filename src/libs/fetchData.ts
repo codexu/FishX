@@ -5,7 +5,7 @@ import puppeteer, { Browser, Page } from "puppeteer";
 const baseUrl = "https://toutiao.com/";
 
 let browser: Browser;
-let listPage: Page;
+let homePage: Page;
 let contentPage: Page;
 
 async function initBorwser() {
@@ -16,27 +16,24 @@ async function initBorwser() {
       "--disable-setuid-sandbox",
       "--disable-blink-features=AutomationControlled",
     ],
+    defaultViewport: {
+      width: 1920,
+      height: 1080,
+      isMobile: true
+    },
     dumpio: false,
   });
-  listPage = await browser.newPage();
+  homePage = await browser.newPage();
   contentPage = await browser.newPage();
 
-  await listPage.evaluate(
-    "() =>{Object.defineProperties(navigator,{webdriver:{get: () => false}})}"
-  );
-  await contentPage.evaluate(
-    "() =>{Object.defineProperties(navigator,{webdriver:{get: () => false}})}"
-  );
-  await listPage.goto(baseUrl);
-  await listPage.waitForSelector(".feed-card-article-wrapper", {
-    visible: true,
-    timeout: 3000,
-  });
+  await homePage.goto(baseUrl);
+  await homePage.waitForSelector(".feed-card-article-wrapper");
 }
 
+// 获取列表数据
 async function getListData () {
-  await autoScroll(listPage);
-  return await listPage.evaluate(async () => {
+  await autoScroll(homePage);
+  return await homePage.evaluate(async () => {
     let list: DataItem[] = [];
     document.querySelectorAll(".feed-card-article-wrapper").forEach((item) => {
       if (item.classList.contains("sticky-cell")) {
@@ -58,6 +55,7 @@ async function getListData () {
   });
 }
 
+// 初始化获取列表
 export async function fetchListData() {
   if (browser === undefined) {
     await initBorwser();
@@ -67,12 +65,10 @@ export async function fetchListData() {
   }
 }
 
+// 获取内容
 export async function fetchContent(url: string) {
   await contentPage.goto(url);
-  await contentPage.waitForSelector(".article-content", {
-    visible: true,
-    timeout: 3000,
-  });
+  await contentPage.waitForSelector(".article-content");
   return await contentPage.evaluate(async () => {
     const dom = document.querySelector(".article-content");
     let string = '##### ' + dom?.innerHTML.replace(/<[^>]+>/g, "");
@@ -83,16 +79,10 @@ export async function fetchContent(url: string) {
 // 获取评论
 export async function fetchComment(url: string) {
   await contentPage.goto(url);
-  await contentPage.waitForSelector(".side-drawer-btn", {
-    visible: true,
-    timeout: 3000,
-  });
+  await contentPage.waitForSelector(".side-drawer-btn");
   // 点击评论按钮
   await contentPage.click(".side-drawer-btn");
-  await contentPage.waitForSelector(".comment-list", {
-    visible: true,
-    timeout: 3000,
-  });
+  await contentPage.waitForSelector(".comment-list");
   return await contentPage.evaluate(async () => {
     const dom = document.querySelectorAll(".comment-list li");
     let string = '';
@@ -104,5 +94,23 @@ export async function fetchComment(url: string) {
       }
     });
     return string || "暂无评论";
+  });
+}
+
+// 完成登录
+export async function checkLoginState() {
+  await homePage.waitForSelector(".user-icon");
+}
+
+// 获取登录二维码
+export async function fetchLoginQrCode() {
+  await homePage.waitForSelector(".login-button");
+  await homePage.click(".login-button");
+  await homePage.waitForSelector(".web-login-scan-code__content__qrcode-wrapper__qrcode");
+  return await homePage.evaluate(async () => {
+    const dom = document.querySelector(
+      ".web-login-scan-code__content__qrcode-wrapper__qrcode"
+    );
+    return dom?.getAttribute("src") || "";
   });
 }

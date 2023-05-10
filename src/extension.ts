@@ -1,9 +1,16 @@
 import * as vscode from 'vscode';
-import { fetchListData, fetchContent, fetchComment } from "./libs/fetchData";
+import {
+  fetchListData,
+  fetchContent,
+  fetchComment,
+  fetchLoginQrCode,
+  checkLoginState,
+} from "./libs/fetchData";
 import { setStateBarItem } from './libs/setStatusBar';
 import getLoaclData from './libs/getLocalData';
 
 let statusBarContent: vscode.StatusBarItem;
+let loginButton: vscode.StatusBarItem;
 let quickPick: vscode.QuickPick<vscode.QuickPickItem>;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -16,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
           vscode.StatusBarAlignment.Right,
           100
         );
-        statusBarContent.text = "加载中...";
+        statusBarContent.text = "$(loading~spin) 鱼塘建造中...";
         statusBarContent.command = "FishX.quickPick";
         statusBarContent.show();
 
@@ -27,7 +34,6 @@ export async function activate(context: vscode.ExtensionContext) {
         prevButton.text = "$(arrow-left)";
         prevButton.tooltip = "上一条";
         prevButton.command = "FishX.prev";
-        prevButton.show();
 
         const nextButton = vscode.window.createStatusBarItem(
           vscode.StatusBarAlignment.Right,
@@ -36,13 +42,24 @@ export async function activate(context: vscode.ExtensionContext) {
         nextButton.text = "$(arrow-right)";
         nextButton.tooltip = "下一条";
         nextButton.command = "FishX.next";
-        nextButton.show();
+
+        // 登录按钮
+        loginButton = vscode.window.createStatusBarItem(
+          vscode.StatusBarAlignment.Right,
+          100
+        );
+        loginButton.text = "$(account)";
+        loginButton.tooltip = "登录";
+        loginButton.command = "FishX.login";
 
         const data = await fetchListData();
         context.workspaceState.update("tt-data", data);
         context.workspaceState.update("tt-index", 0);
 
         setStateBarItem(statusBarContent, context);
+        prevButton.show();
+        nextButton.show();
+        loginButton.show();
       }
     }
   );
@@ -77,7 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
     async () => {
       const { index, data } = getLoaclData(context);
       if (index >= data.length - 1) {
-        statusBarContent.text = "正在加载更多内容...";
+        statusBarContent.text = "$(loading~spin) 补鱼中...";
         const newData = await fetchListData();
         const newDataMap = new Map();
         for (const item of [...data, ...newData]) {
@@ -126,6 +143,35 @@ export async function activate(context: vscode.ExtensionContext) {
       },
     }
   );
+
+  // 登录指令
+  const loginDisposable = vscode.commands.registerCommand(
+    "FishX.login",
+    async () => {
+      const loginUrl = await fetchLoginQrCode();
+      console.log(loginUrl);
+      // 弹出 webview 展示base64二维码
+      const panel = vscode.window.createWebviewPanel(
+        "login",
+        "登录",
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true,
+        },
+      );
+      panel.webview.html = `
+        <div>
+          <p>扫码登录，登录成功后自动关闭</p>
+          <img src="${loginUrl}" widht="150px" height="150px" />
+        </div>
+      `;
+      await checkLoginState();
+      panel.dispose();
+      loginButton.dispose();
+      loginButton.hide();
+    }
+  );
 	
 	context.subscriptions.push(
     initDisposable,
@@ -133,6 +179,7 @@ export async function activate(context: vscode.ExtensionContext) {
     nextDisposable,
     prevDisposable,
     hoverDisposable,
+    loginDisposable
   );
 }
 

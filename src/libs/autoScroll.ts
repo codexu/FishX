@@ -8,7 +8,7 @@ export default async function autoScroll(page: Page) {
       const timer = setInterval(() => {
         window.scrollBy(0, distance);
         totalHeight += distance;
-        if (totalHeight >= 2000) {
+        if (totalHeight >= 5000) {
           clearInterval(timer);
           resolve(true);
         }
