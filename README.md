@@ -4,7 +4,7 @@
 
 ## 使用方式
 
-第一次使用，通过 ctrl+shift+p 打开命令面板，输入 FishX，选择 初始化 FishX。
+第一次使用，通过 ctrl+shift+p 打开命令面板，输入开始摸鱼。
 
 ## 功能
 
@@ -18,11 +18,18 @@
 ## 展示
 
 
-- 状态栏
+状态栏
+
 ![20230510105423](https://raw.githubusercontent.com/codexu/images/main/img/20230510105423.png)
-- 列表
+
+列表
+
 ![20230510105458](https://raw.githubusercontent.com/codexu/images/main/img/20230510105458.png)
-- 正文
+
+正文
+
 ![20230510105358](https://raw.githubusercontent.com/codexu/images/main/img/20230510105358.png)
-- 评论
+
+评论
+
 ![20230510105247](https://raw.githubusercontent.com/codexu/images/main/img/20230510105247.png)
