@@ -149,7 +149,6 @@ export async function activate(context: vscode.ExtensionContext) {
     "FishX.login",
     async () => {
       const loginUrl = await fetchLoginQrCode();
-      console.log(loginUrl);
       // 弹出 webview 展示base64二维码
       const panel = vscode.window.createWebviewPanel(
         "login",

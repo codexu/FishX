@@ -71,8 +71,12 @@ export async function fetchContent(url: string) {
   await contentPage.waitForSelector(".article-content");
   return await contentPage.evaluate(async () => {
     const dom = document.querySelector(".article-content");
-    let string = '##### ' + dom?.innerHTML.replace(/<[^>]+>/g, "");
-    return string || "暂无内容";
+    let contentMD = '';
+    contentMD += "#### " + dom?.querySelector("h1")?.innerHTML + "\n\n" || "暂无标题\n\n";
+    dom?.querySelectorAll("article p").forEach((item) => {
+      contentMD += "##### " + item.innerHTML + '\n\n';
+    });
+    return contentMD || "暂无内容";
   });
 }
 
