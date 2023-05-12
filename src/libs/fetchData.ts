@@ -86,18 +86,27 @@ export async function fetchComment(url: string) {
   await contentPage.waitForSelector(".side-drawer-btn");
   // 点击评论按钮
   await contentPage.click(".side-drawer-btn");
-  await contentPage.waitForSelector(".comment-list");
+  await contentPage.waitForSelector(".ttp-comment-wrapper");
+  await contentPage.click(".load-more-btn");
   return await contentPage.evaluate(async () => {
-    const dom = document.querySelectorAll(".comment-list li");
-    let string = '';
+    let comments = "";
+    const totalComment = document.querySelector(".detail-interaction-comment span");
+    comments += `#### 评论(共${totalComment?.innerHTML}条) \n\n`;
+    comments += `--- \n\n`;
+    const dom = document.querySelectorAll(
+      ".ttp-comment-wrapper .comment-list li"
+    );
     dom.forEach((item) => {
       const name = item.querySelector(".name");
+      const like = item.querySelector(".ttp-comment-like .inner span");
       const content = item.querySelector(".content");
       if (name && content) {
-        string += `##### **${name.innerHTML}**：${content.innerHTML.replace(/<[^>]+>/g, "")}\n\n`;
+        comments += `##### ${name.innerHTML.replace(/<[^>]+>/g, "")} 【${like?.innerHTML}】 \n`;
+        comments += `##### ${content.innerHTML.replace(/<[^>]+>/g, "")} \n\n`;
+        comments += `--- \n\n`;
       }
     });
-    return string || "暂无评论";
+    return comments || "暂无评论";
   });
 }
 

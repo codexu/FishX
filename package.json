@@ -3,7 +3,7 @@
   "displayName": "Fish X",
   "description": "头条摸鱼神器",
   "publisher": "codexu",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "icon": "logo.png",
   "engines": {
     "vscode": "^1.78.0"

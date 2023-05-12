@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### 0.1.7
+
+- 优化评论展示格式
+
 ### 0.1.6
 
 - 优化正文展示格式
